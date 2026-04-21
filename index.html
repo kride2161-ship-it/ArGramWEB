@@ -1,0 +1,1613 @@
+<!DOCTYPE html><html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <title>ArGram 2.0 Web</title>
+  <style>
+    :root{
+      --acc:#0a84ff;
+      --acc2:#6ea8fe;
+      --glass:rgba(255,255,255,0.58);
+      --glass2:rgba(255,255,255,0.36);
+      --text:#0f172a;
+      --muted:#667085;
+      --line:rgba(255,255,255,0.55);
+      --shadow:0 18px 45px rgba(15, 23, 42, 0.10);
+      --warn:#ff3b30;
+    }*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+  font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html,body{
+  margin:0;
+  height:100%;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.9), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(139,184,255,0.22), transparent 32%),
+    linear-gradient(180deg, #eef3fb 0%, #e7edf8 100%);
+  color:var(--text);
+  overflow:hidden;
+}
+
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+
+#app{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.topbar{
+  margin:12px 12px 8px;
+  border-radius:24px;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.brand{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:0.2px;
+}
+
+.brand small{
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.status-dot{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#16a34a;
+  box-shadow:0 0 0 4px rgba(22,163,74,.12);
+}
+
+.dot.offline{
+  background:#f59e0b;
+  box-shadow:0 0 0 4px rgba(245,158,11,.12);
+}
+
+.pills{
+  display:flex;
+  gap:10px;
+  padding:0 12px 10px;
+}
+
+.pill{
+  flex:1;
+  border:none;
+  border-radius:18px;
+  padding:13px 14px;
+  background:var(--glass2);
+  color:#334155;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .2s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow:0 8px 20px rgba(15, 23, 42, 0.06);
+  position:relative;
+}
+
+.pill:hover{ transform:translateY(-1px); }
+.pill:active{ transform:scale(0.98); }
+.pill.active{
+  background:linear-gradient(135deg, var(--acc), var(--acc2));
+  color:white;
+  box-shadow:0 12px 28px rgba(10,132,255,0.25);
+}
+
+.badge{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  background:var(--warn);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #fff;
+  font-size:10px;
+  font-weight:800;
+  animation:pulse 1.25s infinite;
+}
+
+@keyframes pulse{
+  0%{ transform:scale(1); }
+  50%{ transform:scale(1.12); }
+  100%{ transform:scale(1); }
+}
+
+.chatbar{
+  margin:0 12px 8px;
+  border-radius:22px;
+  padding:12px 14px;
+  display:none;
+  align-items:center;
+  gap:10px;
+}
+
+.flow{
+  flex:1;
+  overflow-y:auto;
+  padding:8px 12px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  scroll-behavior:smooth;
+}
+
+.msg-row{
+  display:flex;
+  align-items:flex-end;
+  gap:9px;
+  animation:slideUp .22s ease both;
+}
+
+.msg-row.me{
+  flex-direction:row-reverse;
+}
+
+@keyframes slideUp{
+  from{ opacity:0; transform:translateY(10px) scale(.98); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+.ava{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  object-fit:cover;
+  flex:0 0 auto;
+  border:1px solid rgba(255,255,255,0.85);
+  box-shadow:0 8px 18px rgba(15,23,42,.12);
+  background:#dbe4f0;
+}
+
+.ava-fallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:800;
+  color:#35506d;
+  background:linear-gradient(135deg, #dfe7f3, #f8fbff);
+}
+
+.bubble{
+  max-width:min(78%, 620px);
+  padding:11px 14px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.86);
+  border:1px solid rgba(255,255,255,0.7);
+  box-shadow:0 10px 24px rgba(15,23,42,0.08);
+  word-break:break-word;
+  cursor:pointer;
+  transition:transform .18s ease, opacity .18s ease, box-shadow .18s ease;
+  position:relative;
+  overflow:hidden;
+  white-space:pre-wrap;
+}
+
+.bubble:hover{
+  transform:translateY(-1px);
+  box-shadow:0 14px 28px rgba(15,23,42,0.11);
+}
+
+.bubble:active{
+  transform:scale(0.985);
+  opacity:0.92;
+}
+
+.me .bubble{
+  background:linear-gradient(135deg, var(--acc), var(--acc2));
+  color:white;
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+.bubble b{
+  display:block;
+  font-size:10px;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  opacity:.62;
+  margin-bottom:3px;
+}
+
+.bubble img{
+  width:100%;
+  display:block;
+  border-radius:12px;
+  margin-top:6px;
+}
+
+.footer{
+  margin:0 12px 12px;
+  border-radius:24px;
+  padding:10px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.i-wrap{
+  flex:1;
+  display:flex;
+  align-items:center;
+  background:rgba(255,255,255,0.76);
+  border:1px solid rgba(255,255,255,0.75);
+  border-radius:18px;
+  padding:0 4px;
+}
+
+.i-wrap input{
+  width:100%;
+  border:none;
+  background:transparent;
+  outline:none;
+  padding:13px 12px;
+  font-size:16px;
+  color:var(--text);
+}
+
+.btn{
+  width:44px;
+  height:44px;
+  border:none;
+  border-radius:50%;
+  cursor:pointer;
+  background:rgba(255,255,255,0.62);
+  color:#1f2937;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 22px rgba(15,23,42,.10);
+  border:1px solid rgba(255,255,255,0.72);
+  transition:transform .18s ease, opacity .18s ease, background .18s ease;
+  flex:0 0 auto;
+  overflow:hidden;
+  position:relative;
+}
+
+.btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,0.78); }
+.btn:active{ transform:scale(.92); }
+
+.btn.send{
+  background:linear-gradient(135deg, var(--acc), var(--acc2));
+  color:#fff;
+  width:auto;
+  min-width:44px;
+  padding:0 14px;
+  border-radius:16px;
+  font-weight:800;
+}
+
+#auth{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,.95), transparent 30%),
+    linear-gradient(180deg, #edf3fb, #e8eef8);
+}
+
+.auth-card{
+  width:min(92vw, 420px);
+  border-radius:28px;
+  padding:22px;
+  text-align:center;
+}
+
+.auth-title{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.2px;
+  margin-bottom:6px;
+}
+
+.auth-sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:18px;
+}
+
+.auth-field{
+  width:100%;
+  border:none;
+  outline:none;
+  padding:15px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.82);
+  border:1px solid rgba(255,255,255,0.8);
+  margin-bottom:10px;
+  font-size:16px;
+  box-shadow:0 10px 22px rgba(15,23,42,.06);
+}
+
+.ava-box{
+  width:86px;
+  height:86px;
+  margin:0 auto 10px;
+  border-radius:50%;
+  overflow:hidden;
+  background:linear-gradient(135deg, #dfe7f3, #f8fbff);
+  border:2px solid rgba(10,132,255,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  box-shadow:0 14px 30px rgba(15,23,42,.10);
+}
+
+#adm{
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  display:none;
+  background:rgba(14, 20, 34, 0.42);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding:16px;
+}
+
+.adm-panel{
+  width:min(100%, 980px);
+  height:100%;
+  margin:0 auto;
+  border-radius:28px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:rgba(255,255,255,0.62);
+  border:1px solid rgba(255,255,255,0.72);
+  box-shadow:0 20px 55px rgba(0,0,0,0.18);
+}
+
+.adm-head{
+  padding:18px 18px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid rgba(255,255,255,0.55);
+}
+
+.adm-head h3{
+  margin:0;
+  font-size:18px;
+}
+
+.adm-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.adm-btn{
+  border:none;
+  border-radius:16px;
+  padding:12px 14px;
+  font-weight:800;
+  cursor:pointer;
+  background:rgba(255,255,255,0.72);
+  border:1px solid rgba(255,255,255,0.8);
+  box-shadow:0 10px 20px rgba(15,23,42,.08);
+  transition:transform .18s ease, background .18s ease;
+}
+
+.adm-btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,0.92); }
+.adm-btn:active{ transform:scale(.98); }
+
+.adm-btn.danger{
+  background:rgba(255,59,48,.12);
+  color:#b42318;
+}
+
+.adm-grid{
+  flex:1;
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap:12px;
+  padding:12px;
+  overflow:hidden;
+}
+
+.adm-card{
+  border-radius:24px;
+  padding:14px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  background:rgba(255,255,255,0.55);
+  border:1px solid rgba(255,255,255,0.7);
+}
+
+.adm-card h4{
+  margin:0 0 10px 0;
+  font-size:15px;
+}
+
+.adm-list{
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding-right:2px;
+}
+
+.adm-item{
+  border-radius:18px;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.72);
+  border:1px solid rgba(255,255,255,0.8);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 8px 18px rgba(15,23,42,.06);
+}
+
+.adm-item .txt{
+  flex:1;
+  min-width:0;
+}
+
+.adm-item .txt b{
+  display:block;
+  font-size:14px;
+  margin-bottom:2px;
+}
+
+.adm-item .txt span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.adm-mini{
+  border:none;
+  border-radius:14px;
+  padding:9px 11px;
+  font-weight:800;
+  cursor:pointer;
+  background:rgba(10,132,255,.10);
+  color:#0b5dbb;
+}
+
+.adm-mini.red{
+  background:rgba(255,59,48,.11);
+  color:#b42318;
+}
+
+.adm-log{
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size:12px;
+  line-height:1.4;
+  white-space:normal;
+}
+
+.hidden{ opacity:0; pointer-events:none; transform:translateY(-20px); }
+
+#ctx{
+  position:fixed;
+  inset:0;
+  z-index:2500;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(15,23,42,0.35);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  padding:20px;
+}
+
+.ctx-card{
+  width:min(92vw, 320px);
+  border-radius:24px;
+  padding:16px;
+  text-align:center;
+}
+
+.ctx-card h4{
+  margin:0 0 14px 0;
+  font-size:15px;
+  word-break:break-word;
+}
+
+.ctx-btn{
+  width:100%;
+  border:none;
+  border-radius:16px;
+  padding:13px 14px;
+  font-weight:800;
+  margin-top:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.78);
+  border:1px solid rgba(255,255,255,0.8);
+  box-shadow:0 10px 18px rgba(15,23,42,.08);
+}
+
+.ctx-btn.danger{
+  background:rgba(255,59,48,.12);
+  color:#b42318;
+}
+
+#banOverlay{
+  position:fixed;
+  inset:0;
+  z-index:4000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(15,23,42,.45);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  padding:20px;
+}
+
+.ban-card{
+  width:min(92vw, 360px);
+  border-radius:24px;
+  padding:20px;
+  text-align:center;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 20px 55px rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.8);
+}
+
+.ban-card h2{
+  margin:0 0 8px 0;
+  font-size:22px;
+}
+
+.ban-card p{
+  margin:0 0 16px 0;
+  color:#667085;
+}
+
+.notice{
+  margin:0 12px 10px;
+  padding:10px 14px;
+  border-radius:18px;
+  font-size:12px;
+  color:#334155;
+  display:none;
+}
+
+@media (max-width: 860px){
+  .adm-grid{ grid-template-columns:1fr; }
+  .bubble{ max-width:82%; }
+}
+
+  </style>  <!-- Firebase compat SDK for simple single-file use -->  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script></head>
+<body>
+  <div id="app">
+    <div class="topbar glass">
+      <div class="brand">
+        ArGram2.0
+        <small>веб-версия чата</small>
+      </div>
+      <div class="status-dot" id="netStatus">
+        <span class="dot" id="netDot"></span>
+        <span id="netText">Online mode</span>
+      </div>
+    </div><div class="notice glass" id="modeNotice"></div>
+
+<div class="pills">
+  <button id="t-g" class="pill active" onclick="setR('global')">Общий</button>
+  <button id="t-p" class="pill" onclick="setR('priv')">Личка <span id="p-warn" class="badge" style="display:none">1</span></button>
+</div>
+
+<div id="chatbar" class="chatbar glass"></div>
+<div id="flow" class="flow"></div>
+
+<div id="footer" class="footer glass">
+  <label class="btn" title="Фото">
+    📎
+    <input type="file" style="display:none" accept="image/*" onchange="sP(this)">
+  </label>
+  <div class="i-wrap"><input id="mi" placeholder="Сообщение..."></div>
+  <button class="btn send" onclick="sT()">↑</button>
+</div>
+
+  </div>  <div id="auth">
+    <div class="auth-card glass">
+      <div class="auth-title">ArGram2.0</div>
+      <div class="auth-sub">вход или регистрация</div><label style="display:block; margin-bottom:14px; cursor:pointer;">
+    <div id="ava-prv" class="ava-box">📷</div>
+    <div style="font-size:12px; color:var(--muted);">Аватарка (необязательно)</div>
+    <input type="file" style="display:none" accept="image/*" onchange="readAva(this)">
+  </label>
+
+  <input type="text" id="un" class="auth-field" placeholder="Логин">
+  <input type="password" id="up" class="auth-field" placeholder="Пароль">
+  <button class="btn send" onclick="doL()" style="width:100%; height:48px; border-radius:18px; margin-top:8px;">Войти</button>
+  <div style="margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4;">Если сеть есть — работает через Firebase. Если сети нет — сохраняет на этом устройстве локально.</div>
+</div>
+
+  </div>  <div id="adm" onclick="closeAdm(event)">
+    <div class="adm-panel" onclick="event.stopPropagation()">
+      <div class="adm-head">
+        <div>
+          <h3>ROOT@ARGRAM</h3>
+          <div style="color:var(--muted); font-size:12px;">панель управления</div>
+        </div>
+        <div class="adm-actions">
+          <button class="adm-btn danger" onclick="aCmd('clear')">Очистить чаты</button>
+          <button class="adm-btn" onclick="renderAdmin()">Обновить</button>
+          <button class="adm-btn" onclick="closeAdmin()">Закрыть</button>
+        </div>
+      </div><div class="adm-grid">
+    <div class="adm-card">
+      <h4>Пользователи</h4>
+      <div id="a-users" class="adm-list"></div>
+    </div>
+
+    <div class="adm-card">
+      <h4>Лог сообщений</h4>
+      <div id="a-log" class="adm-list adm-log"></div>
+    </div>
+  </div>
+</div>
+
+  </div>  <div id="ctx" onclick="hideCtx(event)">
+    <div class="ctx-card glass" onclick="event.stopPropagation()">
+      <h4 id="ctx-t">Сообщение</h4>
+      <button class="ctx-btn" onclick="actEd()">Изменить</button>
+      <button class="ctx-btn danger" onclick="actDel()">Удалить</button>
+      <button class="ctx-btn" onclick="closeCtx()">Отмена</button>
+    </div>
+  </div>  <div id="banOverlay">
+    <div class="ban-card">
+      <h2>Вы были забанены</h2>
+      <p>Доступ к чату закрыт администратором.</p>
+      <button onclick="location.reload()" style="width:100%; padding:13px 14px; border:none; border-radius:16px; font-weight:800; background:#0a84ff; color:white; cursor:pointer;">
+        Перезагрузить
+      </button>
+    </div>
+  </div>  <script>
+    /***********************
+     *  CONFIG
+     ***********************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXjpg_q1tgE_B_gl1kzkvbOG2W63_Uk8g",
+      authDomain: "mirrochat-6c736.firebaseapp.com",
+      projectId: "mirrochat-6c736",
+      storageBucket: "mirrochat-6c736.firebasestorage.app",
+      messagingSenderId: "1082898439219",
+      appId: "1:1082898439219:web:8b9d3c65ad1a754415d746",
+      measurementId: "G-3Y6V2SX6XF"
+    };
+
+    const ADMIN_CMD = "/Admin panel5255";
+    const MAX_MESSAGES = 300;
+    const LOCAL_DB_KEY = "argram_local_db_v1";
+    const LOCAL_SESSION_KEY = "argram_local_session_v1";
+
+    /***********************
+     *  STATE
+     ***********************/
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+
+    const state = {
+      mode: navigator.onLine ? 'firebase' : 'local',
+      dbType: null, // firebase | local
+      meName: "",
+      room: "global",
+      target: "",
+      activeMsgId: null,
+      activeMsgText: "",
+      adminOpen: false,
+      typingTimer: null,
+      banShown: false,
+      lastSnapshot: { users: [], msgs: [] },
+      lastRead: {},
+      myAvaBase64: "",
+      localTimer: null,
+      subs: [],
+      firebaseReady: false
+    };
+
+    let fbApp = null;
+    let fbDb = null;
+
+    function now(){ return Date.now(); }
+    function isImageData(s){ return typeof s === 'string' && s.startsWith('data:image/'); }
+
+    function setNetUI(isOnline){
+      const dot = $('netDot');
+      const text = $('netText');
+      if(isOnline){
+        dot.classList.remove('offline');
+        text.textContent = 'Online mode';
+      } else {
+        dot.classList.add('offline');
+        text.textContent = 'Offline mode';
+      }
+    }
+
+    function showNotice(text){
+      const box = $('modeNotice');
+      if(!text){
+        box.style.display = 'none';
+        box.textContent = '';
+        return;
+      }
+      box.style.display = 'block';
+      box.textContent = text;
+    }
+
+    function avatarHtml(name, avatarUrl){
+      if (avatarUrl) return `<img src="${avatarUrl}" class="ava" alt="avatar">`;
+      const ch = (name && name.length) ? esc(name[0].toUpperCase()) : '?';
+      return `<div class="ava ava-fallback">${ch}</div>`;
+    }
+
+    function displayStatus(u){
+      if (!u) return 'Не в сети';
+      if (u.b) return 'Заблокирован';
+      if (u.ty && u.on) return 'Печатает...';
+      if (u.on) return 'В сети';
+      return 'Не в сети';
+    }
+
+    function localLoad(){
+      try {
+        return JSON.parse(localStorage.getItem(LOCAL_DB_KEY) || '{"users":{},"messages":{}}');
+      } catch {
+        return { users: {}, messages: {} };
+      }
+    }
+
+    function localSave(db){
+      localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(db));
+    }
+
+    function localUpsertUser(name, patch){
+      const db = localLoad();
+      db.users[name] = Object.assign({ n:name, p:'', b:false, a:'', lastSeen:0, typing:false, reads:{} }, db.users[name] || {}, patch || {});
+      localSave(db);
+      return db.users[name];
+    }
+
+    function localAddMessage(msg){
+      const db = localLoad();
+      db.messages[msg.id] = msg;
+      const msgs = Object.values(db.messages).sort((a,b) => (a.ts||0) - (b.ts||0));
+      while(msgs.length > MAX_MESSAGES){
+        const old = msgs.shift();
+        delete db.messages[old.id];
+      }
+      localSave(db);
+    }
+
+    function localToggleBan(name){
+      const db = localLoad();
+      if(!db.users[name]) return;
+      db.users[name].b = !db.users[name].b;
+      localSave(db);
+    }
+
+    function localClearAll(){
+      const db = localLoad();
+      db.messages = {};
+      localSave(db);
+    }
+
+    function localDeleteMsg(id){
+      const db = localLoad();
+      delete db.messages[id];
+      localSave(db);
+    }
+
+    function localEditMsg(id, newText){
+      const db = localLoad();
+      if(db.messages[id]) db.messages[id].m = newText;
+      localSave(db);
+    }
+
+    function localGetSnapshot(){
+      const db = localLoad();
+      const users = Object.values(db.users || {});
+      const msgs = Object.values(db.messages || {}).sort((a,b) => (a.ts||0) - (b.ts||0));
+      return { users, msgs };
+    }
+
+    function setRoom(r){
+      if(state.room === 'chat' && r !== 'chat') sendTyping(false);
+      state.room = r;
+      if(r === 'priv'){
+        state.target = "";
+        $('p-warn').style.display = 'none';
+      }
+      $('t-g').className = 'pill ' + (r === 'global' ? 'active' : '');
+      $('t-p').className = 'pill ' + (r !== 'global' ? 'active' : '');
+      render();
+      updateChatBar();
+      updateFooter();
+    }
+    window.setR = setRoom;
+
+    function updateFooter(){
+      const footer = $('footer');
+      if(state.room === 'global' || state.room === 'chat') footer.style.display = 'flex';
+      else footer.style.display = 'none';
+    }
+
+    function updateChatBar(){
+      const bar = $('chatbar');
+      if(state.room !== 'chat' || !state.target){
+        bar.style.display = 'none';
+        bar.innerHTML = '';
+        return;
+      }
+      const u = state.lastSnapshot.users.find(x => x.n === state.target);
+      const st = displayStatus(u);
+      bar.style.display = 'flex';
+      bar.innerHTML = `${avatarHtml(state.target, u?.a)}
+        <div style="min-width:0">
+          <div style="font-weight:900; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(state.target)}</div>
+          <div style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(st)}</div>
+        </div>`;
+    }
+
+    function renderPrivateList(){
+      const users = state.lastSnapshot.users.filter(u => u.n !== state.meName);
+      const html = users.map(u => {
+        const lastRead = state.lastRead[u.n] || 0;
+        const hasNew = state.lastSnapshot.msgs.some(m => m.t === state.meName && m.f === u.n && (m.ts || 0) > lastRead);
+        return `<div class="msg-row" style="cursor:pointer; align-items:center;" onclick="openP('${jsEsc(u.n)}')">
+          ${avatarHtml(u.n, u.a)}
+          <div class="bubble" style="width:100%; max-width:none;">
+            <b>${esc(u.n)}</b>
+            ${hasNew ? 'Есть новое сообщение' : 'Открыть диалог'}
+          </div>
+          ${hasNew ? '<span class="badge" style="position:static; margin-left:-4px;">1</span>' : ''}
+        </div>`;
+      }).join('');
+
+      $('flow').innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:24px;">Пользователей пока нет</div>';
+    }
+
+    function msgHtml(m){
+      let content = '';
+      if (isImageData(m.m)) content = `<img src="${m.m}" alt="">`;
+      else content = esc(m.m);
+
+      const isMe = m.f === state.meName;
+      const sideAva = avatarHtml(m.f, m.fa || '');
+      const clickAct = isMe ? `onclick="showCtx('${m.id}', ${JSON.stringify(m.m)})"` : '';
+      const time = m.ts ? new Date(m.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      return `<div class="msg-row ${isMe ? 'me' : ''}">
+        ${!isMe ? sideAva : ''}
+        <div class="bubble" ${clickAct}>
+          <b>${esc(m.f)} ${time ? '• ' + esc(time) : ''}</b>
+          ${content}
+        </div>
+        ${isMe ? sideAva : ''}
+      </div>`;
+    }
+
+    function renderMessages(){
+      const msgs = state.lastSnapshot.msgs;
+      let html = '';
+
+      if(state.room === 'global'){
+        html = msgs.filter(m => !m.t).map(msgHtml).join('');
+      } else if(state.room === 'chat'){
+        html = `<div onclick="setR('priv')" style="text-align:center; color:var(--acc); padding:6px 0 14px; cursor:pointer; font-weight:800;">← Назад к списку</div>` +
+          msgs.filter(m => (m.f === state.meName && m.t === state.target) || (m.f === state.target && m.t === state.meName)).map(msgHtml).join('');
+      } else {
+        renderPrivateList();
+        return;
+      }
+
+      const flow = $('flow');
+      const atBottom = flow.scrollHeight - flow.scrollTop <= flow.clientHeight + 50;
+      flow.innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:24px;">Сообщений пока нет</div>';
+      if(atBottom) flow.scrollTop = flow.scrollHeight;
+    }
+
+    function render(){
+      const me = state.lastSnapshot.users.find(u => u.n === state.meName);
+      if(me && me.b){
+        if(!state.banShown){
+          $('banOverlay').style.display = 'flex';
+          state.banShown = true;
+        }
+        return;
+      } else {
+        $('banOverlay').style.display = 'none';
+        state.banShown = false;
+      }
+
+      if(state.room === 'priv') renderPrivateList();
+      else renderMessages();
+      updateChatBar();
+    }
+
+    function jsEsc(s){
+      return String(s)
+        .replace(/\/g,'\\')
+        .replace(/'/g,"\'")
+        .replace(/
+/g,' ')
+        .replace(/
+/g,' ');
+    }
+
+    function fileToDataURL(file, maxSide = 90, quality = 0.15){
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onerror = reject;
+        r.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const ratio = Math.min(maxSide / img.width, maxSide / img.height, 1);
+            const w = Math.max(1, Math.round(img.width * ratio));
+            const h = Math.max(1, Math.round(img.height * ratio));
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        r.readAsDataURL(file);
+      });
+    }
+
+    function isFirebaseOnline(){
+      return state.dbType === 'firebase' && navigator.onLine && !!fbDb;
+    }
+
+    /***********************
+     *  FIREBASE
+     ***********************/
+    function initFirebase(){
+      try {
+        fbApp = firebase.initializeApp(firebaseConfig);
+        fbDb = firebase.database();
+        state.firebaseReady = true;
+        state.dbType = 'firebase';
+      } catch (e) {
+        console.warn('Firebase init failed, switching to local mode:', e);
+        state.firebaseReady = false;
+        state.dbType = 'local';
+      }
+    }
+
+    async function fbAuthLogin(name, pass, avatar){
+      const userRef = firebase.database().ref('users/' + name);
+      const snap = await userRef.once('value');
+      if(!snap.exists()){
+        await userRef.set({
+          n: name,
+          p: pass,
+          b: false,
+          a: avatar || '',
+          lastSeen: Date.now(),
+          typing: false,
+          reads: {}
+        });
+        return 'REG';
+      }
+
+      const u = snap.val();
+      if(u.b) return 'BAN';
+      if((u.p || '') !== pass) return 'ERR';
+      const patch = { lastSeen: Date.now(), typing: false };
+      if(avatar && avatar.length > 10) patch.a = avatar;
+      await userRef.update(patch);
+      return 'OK';
+    }
+
+    async function fbStartPresence(){
+      const userRef = firebase.database().ref('users/' + state.meName);
+      const connectedRef = firebase.database().ref('.info/connected');
+      connectedRef.on('value', (snap) => {
+        if(snap.val() === true){
+          userRef.onDisconnect().update({ on:false, typing:false, lastSeen: Date.now() });
+          userRef.update({ on:true, lastSeen: Date.now(), typing:false });
+        }
+      });
+    }
+
+    function fbWatch(){
+      const usersRef = firebase.database().ref('users');
+      const msgsRef = firebase.database().ref('messages').orderByChild('ts').limitToLast(MAX_MESSAGES);
+
+      usersRef.on('value', (snap) => {
+        const users = [];
+        snap.forEach(child => users.push(child.val()));
+        state.lastSnapshot.users = users;
+        const me = users.find(u => u.n === state.meName);
+        state.lastRead = (me && me.reads) ? me.reads : {};
+        render();
+        if(state.adminOpen) renderAdmin();
+      });
+
+      msgsRef.on('value', (snap) => {
+        const msgs = [];
+        snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
+        msgs.sort((a,b) => (a.ts||0) - (b.ts||0));
+        state.lastSnapshot.msgs = msgs;
+
+        const hasNewPriv = msgs.some(m => m.t === state.meName && m.f !== state.target && !(state.lastRead[m.f] || 0));
+        if(hasNewPriv && state.room !== 'chat') $('p-warn').style.display = 'flex';
+
+        render();
+        if(state.adminOpen) renderAdmin();
+      });
+    }
+
+    async function fbSendText(text){
+      await firebase.database().ref('messages').push({
+        id: '',
+        f: state.meName,
+        t: state.room === 'chat' ? state.target : '',
+        m: text,
+        ts: Date.now()
+      });
+      pruneFirebaseMessages();
+    }
+
+    async function fbSendImage(dataUrl){
+      await firebase.database().ref('messages').push({
+        id: '',
+        f: state.meName,
+        t: state.room === 'chat' ? state.target : '',
+        m: dataUrl,
+        ts: Date.now()
+      });
+      pruneFirebaseMessages();
+    }
+
+    async function pruneFirebaseMessages(){
+      const ref = firebase.database().ref('messages').orderByChild('ts').limitToFirst(30);
+      const snap = await ref.once('value');
+      const countRef = firebase.database().ref('messages');
+      const allSnap = await countRef.orderByChild('ts').limitToLast(MAX_MESSAGES + 50).once('value');
+      const arr = [];
+      allSnap.forEach(child => arr.push({ key: child.key, ...child.val() }));
+      arr.sort((a,b) => (a.ts||0) - (b.ts||0));
+      while(arr.length > MAX_MESSAGES){
+        const old = arr.shift();
+        await firebase.database().ref('messages/' + old.key).remove();
+      }
+    }
+
+    async function fbDeleteMessage(id){
+      await firebase.database().ref('messages/' + id).remove();
+    }
+
+    async function fbEditMessage(id, newText){
+      await firebase.database().ref('messages/' + id).update({ m: newText });
+    }
+
+    async function fbToggleBan(username){
+      const userRef = firebase.database().ref('users/' + username);
+      const snap = await userRef.once('value');
+      if(!snap.exists()) return;
+      const u = snap.val();
+      await userRef.update({ b: !u.b });
+    }
+
+    async function fbClearChat(){
+      const snap = await firebase.database().ref('messages').once('value');
+      const removals = [];
+      snap.forEach(child => removals.push(child.ref.remove()));
+      await Promise.all(removals);
+    }
+
+    async function fbSetTyping(stateOn){
+      if(!state.meName) return;
+      if(state.room !== 'chat' && !stateOn) return;
+      await firebase.database().ref('users/' + state.meName).update({ typing: !!stateOn, lastSeen: Date.now() });
+    }
+
+    /***********************
+     *  LOCAL MODE
+     ***********************/
+    function localAuthLogin(name, pass, avatar){
+      const db = localLoad();
+      if(!db.users[name]){
+        db.users[name] = {
+          n: name,
+          p: pass,
+          b: false,
+          a: avatar || '',
+          lastSeen: Date.now(),
+          typing: false,
+          reads: {}
+        };
+        localSave(db);
+        return 'REG';
+      }
+      if(db.users[name].b) return 'BAN';
+      if((db.users[name].p || '') !== pass) return 'ERR';
+      db.users[name].lastSeen = Date.now();
+      if(avatar && avatar.length > 10) db.users[name].a = avatar;
+      db.users[name].typing = false;
+      localSave(db);
+      return 'OK';
+    }
+
+    function localStartPresence(){
+      localUpsertUser(state.meName, { on:true, lastSeen: Date.now(), typing:false });
+      window.addEventListener('beforeunload', () => {
+        localUpsertUser(state.meName, { on:false, typing:false, lastSeen: Date.now() });
+      });
+    }
+
+    function localWatch(){
+      state.lastSnapshot = localGetSnapshot();
+      const users = state.lastSnapshot.users;
+      const me = users.find(u => u.n === state.meName);
+      state.lastRead = (me && me.reads) ? me.reads : {};
+      render();
+      if(state.adminOpen) renderAdmin();
+      clearInterval(state.localTimer);
+      state.localTimer = setInterval(() => {
+        state.lastSnapshot = localGetSnapshot();
+        render();
+        if(state.adminOpen) renderAdmin();
+      }, 1000);
+    }
+
+    function localSendText(text){
+      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: text, ts: Date.now() };
+      localAddMessage(msg);
+      pruneLocalMessages();
+    }
+
+    function localSendImage(dataUrl){
+      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: dataUrl, ts: Date.now() };
+      localAddMessage(msg);
+      pruneLocalMessages();
+    }
+
+    function pruneLocalMessages(){
+      const db = localLoad();
+      const msgs = Object.values(db.messages || {}).sort((a,b) => (a.ts||0) - (b.ts||0));
+      while(msgs.length > MAX_MESSAGES){
+        const old = msgs.shift();
+        delete db.messages[old.id];
+      }
+      localSave(db);
+    }
+
+    async function localDeleteMessage(id){
+      localDeleteMsg(id);
+    }
+
+    async function localEditMessage(id, newText){
+      localEditMsg(id, newText);
+    }
+
+    async function localToggleBanUser(username){
+      localToggleBan(username);
+    }
+
+    async function localClearChat(){
+      localClearAll();
+    }
+
+    async function localSetTyping(stateOn){
+      if(!state.meName) return;
+      if(state.room !== 'chat' && !stateOn) return;
+      localUpsertUser(state.meName, { typing: !!stateOn, lastSeen: Date.now(), on:true });
+    }
+
+    /***********************
+     *  AUTH / MAIN
+     ***********************/
+    async function doLogin(){
+      const name = $('un').value.trim();
+      const pass = $('up').value;
+      const avatar = state.myAvaBase64 || '';
+      if(!name || !pass) return;
+
+      let result = 'ERR';
+      if(isFirebaseOnline()) result = await fbAuthLogin(name, pass, avatar);
+      else result = localAuthLogin(name, pass, avatar);
+
+      if(result === 'BAN') return alert('Вы заблокированы');
+      if(result === 'ERR') return alert('Неверный пароль');
+      if(result === 'REG') alert('Аккаунт создан');
+
+      state.meName = name;
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ name, ts: Date.now() }));
+      $('auth').classList.add('hidden');
+      $('auth').style.pointerEvents = 'none';
+      $('auth').style.opacity = '0';
+
+      if(isFirebaseOnline()){
+        await fbStartPresence();
+        fbWatch();
+        syncHeartbeatFirebase();
+      } else {
+        localStartPresence();
+        localWatch();
+        syncHeartbeatLocal();
+        showNotice('Офлайн режим: сообщения и аккаунты сохраняются только на этом устройстве.');
+      }
+
+      updateFooter();
+      render();
+    }
+    window.doL = doLogin;
+
+    function syncHeartbeatFirebase(){
+      setInterval(() => {
+        if(!state.meName) return;
+        firebase.database().ref('users/' + state.meName).update({ lastSeen: Date.now() }).catch(()=>{});
+      }, 2500);
+    }
+
+    function syncHeartbeatLocal(){
+      setInterval(() => {
+        if(!state.meName) return;
+        localUpsertUser(state.meName, { lastSeen: Date.now(), on:true });
+      }, 2500);
+    }
+
+    async function sendTyping(stateOn){
+      if(!state.meName) return;
+      if(isFirebaseOnline()) await fbSetTyping(stateOn);
+      else await localSetTyping(stateOn);
+    }
+    window.sendTyping = sendTyping;
+
+    function openP(u){
+      state.target = u;
+      state.room = 'chat';
+      $('p-warn').style.display = 'none';
+      render();
+      updateChatBar();
+      updateFooter();
+      markRead(u);
+    }
+    window.openP = openP;
+
+    function markRead(peer){
+      if(!state.meName || !peer) return;
+      state.lastRead[peer] = Date.now();
+      if(isFirebaseOnline()){
+        firebase.database().ref('users/' + state.meName + '/reads/' + peer).set(state.lastRead[peer]).catch(()=>{});
+      } else {
+        localUpsertUser(state.meName, { reads: state.lastRead });
+      }
+    }
+
+    function currentSnapshot(){
+      return isFirebaseOnline() ? state.lastSnapshot : localGetSnapshot();
+    }
+
+    async function sT(){
+      const input = $('mi');
+      const val = input.value.trim();
+      if(!val) return;
+
+      if(val === ADMIN_CMD){
+        input.value = '';
+        openAdmin();
+        return;
+      }
+
+      if(isFirebaseOnline()) await fbSendText(val);
+      else localSendText(val);
+
+      input.value = '';
+      await sendTyping(false);
+      render();
+    }
+    window.sT = sT;
+
+    async function sP(el){
+      const file = el.files && el.files[0];
+      if(!file) return;
+      const dataUrl = await fileToDataURL(file, 90, 0.15);
+      if(isFirebaseOnline()) await fbSendImage(dataUrl);
+      else localSendImage(dataUrl);
+      el.value = '';
+      render();
+    }
+    window.sP = sP;
+
+    function showCtx(id, txt){
+      state.activeMsgId = id;
+      state.activeMsgText = txt;
+      $('ctx-t').innerText = (String(txt).startsWith('data:image/')) ? '[Вложение]' : String(txt).slice(0, 24) + (String(txt).length > 24 ? '...' : '');
+      $('ctx').style.display = 'flex';
+    }
+    window.showCtx = showCtx;
+
+    function closeCtx(){ $('ctx').style.display = 'none'; }
+    window.closeCtx = closeCtx;
+    window.hideCtx = (e) => { if(e.target.id === 'ctx') closeCtx(); };
+
+    async function actDel(){
+      closeCtx();
+      if(!state.activeMsgId) return;
+      const snap = currentSnapshot();
+      const msg = snap.msgs.find(m => m.id === state.activeMsgId);
+      if(!msg) return;
+      if(msg.f !== state.meName) return alert('Можно удалять только свои сообщения');
+      if(isFirebaseOnline()) await fbDeleteMessage(state.activeMsgId);
+      else await localDeleteMessage(state.activeMsgId);
+      render();
+    }
+    window.actDel = actDel;
+
+    async function actEd(){
+      closeCtx();
+      if(!state.activeMsgId) return;
+      const snap = currentSnapshot();
+      const msg = snap.msgs.find(m => m.id === state.activeMsgId);
+      if(!msg) return;
+      if(msg.f !== state.meName) return alert('Можно менять только свои сообщения');
+      if(String(msg.m).startsWith('data:image/')) return alert('Картинки не редактируются');
+      const newVal = prompt('Новый текст сообщения:', msg.m || '');
+      if(newVal && newVal.trim() !== ''){
+        if(isFirebaseOnline()) await fbEditMessage(state.activeMsgId, newVal.trim());
+        else await localEditMessage(state.activeMsgId, newVal.trim());
+        render();
+      }
+    }
+    window.actEd = actEd;
+
+    function openAdmin(){
+      state.adminOpen = true;
+      $('adm').style.display = 'block';
+      renderAdmin();
+    }
+    window.openAdmin = openAdmin;
+
+    function closeAdmin(){
+      state.adminOpen = false;
+      $('adm').style.display = 'none';
+    }
+    window.closeAdmin = closeAdmin;
+    window.closeAdm = (e) => { if(e.target.id === 'adm') closeAdmin(); };
+
+    function renderAdmin(){
+      const snap = currentSnapshot();
+      const users = snap.users || [];
+      const msgs = snap.msgs || [];
+
+      $('a-users').innerHTML = users.map(u => {
+        const st = displayStatus(u);
+        const btn = u.b ? 'UNBAN' : 'BAN';
+        const red = u.b ? '' : 'red';
+        return `<div class="adm-item">
+          ${avatarHtml(u.n, u.a)}
+          <div class="txt">
+            <b>${esc(u.n)}</b>
+            <span>${esc(st)}</span>
+          </div>
+          <button class="adm-mini ${red}" onclick="aCmd('ban&u='+encodeURIComponent('${jsEsc(u.n)}'))">${btn}</button>
+        </div>`;
+      }).join('') || '<div style="text-align:center;color:var(--muted);padding:18px;">Нет пользователей</div>';
+
+      $('a-log').innerHTML = [
+        `<div class="adm-item" style="justify-content:space-between;">
+          <div class="txt"><b>Всего сообщений</b><span>${msgs.length}</span></div>
+          <div class="txt"><b>Пользователей</b><span>${users.length}</span></div>
+        </div>`,
+        ...msgs.slice().reverse().map(m => `
+          <div class="adm-item">
+            <div class="txt">
+              <b>[${esc(m.t || 'G')}] ${esc(m.f)}</b>
+              <span>${esc(String(m.m).slice(0, 70))}</span>
+            </div>
+          </div>
+        `)
+      ].join('');
+    }
+
+    async function aCmd(c){
+      const [cmd, queryStr] = c.split('&');
+      if(cmd === 'clear'){
+        if(!confirm('Очистить все сообщения?')) return;
+        if(isFirebaseOnline()){
+          const snap = await firebase.database().ref('messages').once('value');
+          const removals = [];
+          snap.forEach(child => removals.push(child.ref.remove()));
+          await Promise.all(removals);
+        } else {
+          localClearChat();
+        }
+      }
+      if(cmd === 'ban'){
+        const params = new URLSearchParams(queryStr);
+        const u = params.get('u');
+        if(!u) return;
+        if(isFirebaseOnline()) await fbToggleBan(u);
+        else await localToggleBanUser(u);
+      }
+      if(isFirebaseOnline()){
+        // wait a tick for onValue update
+        setTimeout(renderAdmin, 200);
+      } else {
+        renderAdmin();
+      }
+      await refreshSnapshot();
+    }
+    window.aCmd = aCmd;
+
+    function setAvatarPreview(base64){
+      state.myAvaBase64 = base64;
+      const box = $('ava-prv');
+      box.innerHTML = base64 ? `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">` : '📷';
+    }
+    window.readAva = async function(el){
+      const file = el.files && el.files[0];
+      if(!file) return;
+      const dataUrl = await fileToDataURL(file, 96, 0.22);
+      setAvatarPreview(dataUrl);
+    };
+
+    function updateWarnFromSnapshot(){
+      const snap = currentSnapshot();
+      const me = snap.users.find(u => u.n === state.meName);
+      if(me && me.b){
+        $('banOverlay').style.display = 'flex';
+        state.banShown = true;
+      }
+      const hasNewPriv = snap.msgs.some(m => m.t === state.meName && m.f !== state.target && !(state.lastRead[m.f] || 0));
+      $('p-warn').style.display = (hasNewPriv && state.room !== 'chat') ? 'flex' : 'none';
+    }
+
+    async function refreshSnapshot(){
+      if(isFirebaseOnline()){
+        const [usersSnap, msgsSnap] = await Promise.all([
+          firebase.database().ref('users').once('value'),
+          firebase.database().ref('messages').orderByChild('ts').limitToLast(MAX_MESSAGES).once('value')
+        ]);
+        const users = [];
+        usersSnap.forEach(child => users.push(child.val()));
+        const msgs = [];
+        msgsSnap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
+        msgs.sort((a,b) => (a.ts||0) - (b.ts||0));
+        state.lastSnapshot = { users, msgs };
+      } else {
+        state.lastSnapshot = localGetSnapshot();
+      }
+      updateWarnFromSnapshot();
+      render();
+      if(state.adminOpen) renderAdmin();
+    }
+
+    function attachLocalPolling(){
+      clearInterval(state.localTimer);
+      state.localTimer = setInterval(() => {
+        if(!state.meName) return;
+        state.lastSnapshot = localGetSnapshot();
+        updateWarnFromSnapshot();
+        render();
+        if(state.adminOpen) renderAdmin();
+      }, 1000);
+    }
+
+    function attachOnlineChangeHandlers(){
+      window.addEventListener('online', async () => {
+        setNetUI(true);
+        state.dbType = 'firebase';
+        showNotice('Перешли в online mode: Firebase включён.');
+        if(state.meName && state.firebaseReady){
+          await refreshSnapshot();
+        }
+      });
+      window.addEventListener('offline', async () => {
+        setNetUI(false);
+        state.dbType = 'local';
+        showNotice('Нет сети: включён offline mode на этом устройстве.');
+        if(state.meName) attachLocalPolling();
+      });
+    }
+
+    function tryResumeSession(){
+      try {
+        const s = JSON.parse(localStorage.getItem(LOCAL_SESSION_KEY) || 'null');
+        if(s && s.name) return s.name;
+      } catch {}
+      return '';
+    }
+
+    async function boot(){
+      attachOnlineChangeHandlers();
+      setNetUI(navigator.onLine);
+      initFirebase();
+
+      const savedName = tryResumeSession();
+      if(savedName) {
+        $('un').value = savedName;
+      }
+
+      // Try to preload snapshot to make admin and lists available after login.
+      if(navigator.onLine && state.firebaseReady){
+        state.dbType = 'firebase';
+        showNotice('Online mode активен: данные сохраняются в Firebase и доступны на других устройствах.');
+      } else {
+        state.dbType = 'local';
+        showNotice('Offline mode: данные сохраняются только в этом браузере.');
+      }
+
+      // Keep UI alive even before login.
+      render();
+      updateFooter();
+    }
+
+    // Expose login before boot binding
+    window.doL = doLogin;
+
+    $('mi').addEventListener('input', () => {
+      if(state.room !== 'chat'){
+        sendTyping(false);
+        return;
+      }
+      clearTimeout(state.typingTimer);
+      const hasText = $('mi').value.trim().length > 0;
+      if(hasText){
+        sendTyping(true);
+        state.typingTimer = setTimeout(() => sendTyping(false), 1100);
+      } else {
+        sendTyping(false);
+      }
+    });
+
+    $('mi').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') sT();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      try {
+        if(state.meName){
+          if(isFirebaseOnline()) firebase.database().ref('users/' + state.meName).update({ on:false, typing:false, lastSeen: Date.now() });
+          else localUpsertUser(state.meName, { on:false, typing:false, lastSeen: Date.now() });
+        }
+      } catch(e) {}
+    });
+
+    boot();
+  </script></body>
+  </html>
