@@ -627,7 +627,7 @@ html,body{
 
   <input type="text" id="un" class="auth-field" placeholder="Логин">
   <input type="password" id="up" class="auth-field" placeholder="Пароль">
-  <button class="btn send" onclick="doL()" style="width:100%; height:48px; border-radius:18px; margin-top:8px;">Войти</button>
+  <button id="loginBtn" type="button" class="btn send" onclick="doL()" style="width:100%; height:48px; border-radius:18px; margin-top:8px;">Войти</button>
   <div style="margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4;">Online: Firebase. Offline: локально на этом устройстве.</div>
 </div>
 
@@ -1101,10 +1101,6 @@ html,body{
       localAddMessage(msg);
     }
 
-    async function localDeleteMessage(id){ localDeleteMessageById(id); }
-    function localDeleteMessageById(id){ localDeleteMessage(id); }
-
-    // fixed direct helpers to avoid name confusion
     async function localDeleteCurrentMessage(id){
       const db = localLoad();
       delete db.messages[id];
@@ -1130,31 +1126,61 @@ html,body{
         const name = $('un').value.trim();
         const pass = $('up').value;
         const avatar = state.myAvaBase64 || '';
-        if(!name || !pass){ alert('Введи логин и пароль'); return; }
+        if(!name || !pass){
+          alert('Введи логин и пароль');
+          return;
+        }
 
-        let result = 'ERR';
-        if(isFirebaseOnline()) result = await fbAuthLogin(name, pass, avatar);
-        else result = localAuthLogin(name, pass, avatar);
-
-        if(result === 'BAN'){ alert('Вы заблокированы'); return; }
-        if(result === 'ERR'){ alert('Неверный пароль'); return; }
-        if(result === 'REG'){ alert('Аккаунт создан'); }
-
+        // Сразу показываем чат, чтобы интерфейс не выглядел зависшим.
         state.meName = name;
         localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ name, ts: now() }));
         $('auth').classList.add('hidden');
         $('auth').style.pointerEvents = 'none';
         $('auth').style.opacity = '0';
 
+        let result = 'OK';
         if(isFirebaseOnline()){
+          try {
+            result = await fbAuthLogin(name, pass, avatar);
+          } catch (e) {
+            console.warn('Firebase login failed, fallback to local mode:', e);
+            state.dbType = 'local';
+            result = localAuthLogin(name, pass, avatar);
+          }
+        } else {
+          state.dbType = 'local';
+          result = localAuthLogin(name, pass, avatar);
+        }
+
+        if(result === 'BAN'){
+          alert('Вы заблокированы');
+          state.meName = '';
+          $('auth').classList.remove('hidden');
+          $('auth').style.pointerEvents = 'auto';
+          $('auth').style.opacity = '1';
+          return;
+        }
+
+        if(result === 'ERR'){
+          alert('Неверный пароль');
+          state.meName = '';
+          $('auth').classList.remove('hidden');
+          $('auth').style.pointerEvents = 'auto';
+          $('auth').style.opacity = '1';
+          return;
+        }
+
+        if(result === 'REG') alert('Аккаунт создан');
+
+        if(isFirebaseOnline() && firebaseOk){
+          state.dbType = 'firebase';
           fbStartPresence();
-          fbWatch();
-          setInterval(() => { if(state.meName) firebase.database().ref('users/' + state.meName).update({ lastSeen: now() }).catch(()=>{}); }, 2500);
+          attachFirebaseWatchers();
           showNotice('Online mode активен: данные сохраняются в Firebase.');
         } else {
+          state.dbType = 'local';
           localStartPresence();
-          localWatch();
-          setInterval(() => { if(state.meName) localUpsertUser(state.meName, { lastSeen: now(), on:true }); }, 2500);
+          attachLocalPolling();
           showNotice('Offline mode: данные сохраняются только на этом устройстве.');
         }
 
@@ -1162,7 +1188,7 @@ html,body{
         render();
       } catch (e) {
         console.error(e);
-        alert('Ошибка входа. Открой консоль и проверь код выше.');
+        alert('Ошибка входа. Открой консоль и посмотри первую красную ошибку.');
       }
     }
     window.doL = doL;
@@ -1457,4 +1483,4 @@ html,body{
 
     boot();
   </script></body>
-  </html>
+</html>
