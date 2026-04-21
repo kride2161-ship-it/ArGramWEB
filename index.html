@@ -171,9 +171,7 @@ html,body{
   animation:slideUp .22s ease both;
 }
 
-.msg-row.me{
-  flex-direction:row-reverse;
-}
+.msg-row.me{ flex-direction:row-reverse; }
 
 @keyframes slideUp{
   from{ opacity:0; transform:translateY(10px) scale(.98); }
@@ -403,10 +401,7 @@ html,body{
   border-bottom:1px solid rgba(255,255,255,0.55);
 }
 
-.adm-head h3{
-  margin:0;
-  font-size:18px;
-}
+.adm-head h3{ margin:0; font-size:18px; }
 
 .adm-actions{
   display:flex;
@@ -478,21 +473,9 @@ html,body{
   box-shadow:0 8px 18px rgba(15,23,42,.06);
 }
 
-.adm-item .txt{
-  flex:1;
-  min-width:0;
-}
-
-.adm-item .txt b{
-  display:block;
-  font-size:14px;
-  margin-bottom:2px;
-}
-
-.adm-item .txt span{
-  color:var(--muted);
-  font-size:12px;
-}
+.adm-item .txt{ flex:1; min-width:0; }
+.adm-item .txt b{ display:block; font-size:14px; margin-bottom:2px; }
+.adm-item .txt span{ color:var(--muted); font-size:12px; }
 
 .adm-mini{
   border:none;
@@ -585,15 +568,8 @@ html,body{
   border:1px solid rgba(255,255,255,.8);
 }
 
-.ban-card h2{
-  margin:0 0 8px 0;
-  font-size:22px;
-}
-
-.ban-card p{
-  margin:0 0 16px 0;
-  color:#667085;
-}
+.ban-card h2{ margin:0 0 8px 0; font-size:22px; }
+.ban-card p{ margin:0 0 16px 0; color:#667085; }
 
 .notice{
   margin:0 12px 10px;
@@ -609,7 +585,7 @@ html,body{
   .bubble{ max-width:82%; }
 }
 
-  </style>  <!-- Firebase compat SDK for simple single-file use -->  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script></head>
+  </style>  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script></head>
 <body>
   <div id="app">
     <div class="topbar glass">
@@ -652,7 +628,7 @@ html,body{
   <input type="text" id="un" class="auth-field" placeholder="Логин">
   <input type="password" id="up" class="auth-field" placeholder="Пароль">
   <button class="btn send" onclick="doL()" style="width:100%; height:48px; border-radius:18px; margin-top:8px;">Войти</button>
-  <div style="margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4;">Если сеть есть — работает через Firebase. Если сети нет — сохраняет на этом устройстве локально.</div>
+  <div style="margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4;">Online: Firebase. Offline: локально на этом устройстве.</div>
 </div>
 
   </div>  <div id="adm" onclick="closeAdm(event)">
@@ -691,32 +667,25 @@ html,body{
     <div class="ban-card">
       <h2>Вы были забанены</h2>
       <p>Доступ к чату закрыт администратором.</p>
-      <button onclick="location.reload()" style="width:100%; padding:13px 14px; border:none; border-radius:16px; font-weight:800; background:#0a84ff; color:white; cursor:pointer;">
-        Перезагрузить
-      </button>
+      <button onclick="location.reload()" style="width:100%; padding:13px 14px; border:none; border-radius:16px; font-weight:800; background:#0a84ff; color:white; cursor:pointer;">Перезагрузить</button>
     </div>
   </div>  <script>
-    /***********************
-     *  CONFIG
-     ***********************/
     const firebaseConfig = {
       apiKey: "AIzaSyDXjpg_q1tgE_B_gl1kzkvbOG2W63_Uk8g",
       authDomain: "mirrochat-6c736.firebaseapp.com",
       projectId: "mirrochat-6c736",
+      databaseURL: "https://mirrochat-6c736-default-rtdb.firebaseio.com",
       storageBucket: "mirrochat-6c736.firebasestorage.app",
       messagingSenderId: "1082898439219",
       appId: "1:1082898439219:web:8b9d3c65ad1a754415d746",
       measurementId: "G-3Y6V2SX6XF"
     };
 
-    const ADMIN_CMD = "/Admin panel5255";
     const MAX_MESSAGES = 300;
+    const ADMIN_CMD = "/Admin panel5255";
     const LOCAL_DB_KEY = "argram_local_db_v1";
     const LOCAL_SESSION_KEY = "argram_local_session_v1";
 
-    /***********************
-     *  STATE
-     ***********************/
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s)
       .replace(/&/g,'&amp;')
@@ -726,26 +695,25 @@ html,body{
       .replace(/'/g,'&#39;');
 
     const state = {
-      mode: navigator.onLine ? 'firebase' : 'local',
-      dbType: null, // firebase | local
-      meName: "",
-      room: "global",
-      target: "",
+      dbType: 'firebase',
+      meName: '',
+      room: 'global',
+      target: '',
       activeMsgId: null,
-      activeMsgText: "",
+      activeMsgText: '',
       adminOpen: false,
       typingTimer: null,
       banShown: false,
       lastSnapshot: { users: [], msgs: [] },
       lastRead: {},
-      myAvaBase64: "",
+      myAvaBase64: '',
       localTimer: null,
-      subs: [],
-      firebaseReady: false
+      fbWatchersReady: false
     };
 
     let fbApp = null;
     let fbDb = null;
+    let firebaseOk = false;
 
     function now(){ return Date.now(); }
     function isImageData(s){ return typeof s === 'string' && s.startsWith('data:image/'); }
@@ -764,39 +732,23 @@ html,body{
 
     function showNotice(text){
       const box = $('modeNotice');
-      if(!text){
-        box.style.display = 'none';
-        box.textContent = '';
-        return;
-      }
+      if(!text){ box.style.display = 'none'; box.textContent = ''; return; }
       box.style.display = 'block';
       box.textContent = text;
     }
 
-    function avatarHtml(name, avatarUrl){
-      if (avatarUrl) return `<img src="${avatarUrl}" class="ava" alt="avatar">`;
-      const ch = (name && name.length) ? esc(name[0].toUpperCase()) : '?';
-      return `<div class="ava ava-fallback">${ch}</div>`;
-    }
-
-    function displayStatus(u){
-      if (!u) return 'Не в сети';
-      if (u.b) return 'Заблокирован';
-      if (u.ty && u.on) return 'Печатает...';
-      if (u.on) return 'В сети';
-      return 'Не в сети';
-    }
-
     function localLoad(){
-      try {
-        return JSON.parse(localStorage.getItem(LOCAL_DB_KEY) || '{"users":{},"messages":{}}');
-      } catch {
-        return { users: {}, messages: {} };
-      }
+      try { return JSON.parse(localStorage.getItem(LOCAL_DB_KEY) || '{"users":{},"messages":{}}'); }
+      catch { return { users: {}, messages: {} }; }
     }
 
-    function localSave(db){
-      localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(db));
+    function localSave(db){ localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(db)); }
+
+    function localGetSnapshot(){
+      const db = localLoad();
+      const users = Object.values(db.users || {});
+      const msgs = Object.values(db.messages || {}).sort((a,b) => (a.ts||0) - (b.ts||0));
+      return { users, msgs };
     }
 
     function localUpsertUser(name, patch){
@@ -817,43 +769,75 @@ html,body{
       localSave(db);
     }
 
-    function localToggleBan(name){
-      const db = localLoad();
-      if(!db.users[name]) return;
-      db.users[name].b = !db.users[name].b;
-      localSave(db);
-    }
-
-    function localClearAll(){
-      const db = localLoad();
-      db.messages = {};
-      localSave(db);
-    }
-
-    function localDeleteMsg(id){
+    function localDeleteMessage(id){
       const db = localLoad();
       delete db.messages[id];
       localSave(db);
     }
 
-    function localEditMsg(id, newText){
+    function localEditMessage(id, text){
       const db = localLoad();
-      if(db.messages[id]) db.messages[id].m = newText;
+      if(db.messages[id]) db.messages[id].m = text;
       localSave(db);
     }
 
-    function localGetSnapshot(){
+    function localToggleBan(username){
       const db = localLoad();
-      const users = Object.values(db.users || {});
-      const msgs = Object.values(db.messages || {}).sort((a,b) => (a.ts||0) - (b.ts||0));
-      return { users, msgs };
+      if(!db.users[username]) return;
+      db.users[username].b = !db.users[username].b;
+      localSave(db);
+    }
+
+    function localClearChat(){
+      const db = localLoad();
+      db.messages = {};
+      localSave(db);
+    }
+
+    function avatarHtml(name, avatarUrl){
+      if (avatarUrl) return `<img src="${avatarUrl}" class="ava" alt="avatar">`;
+      const ch = (name && name.length) ? esc(name[0].toUpperCase()) : '?';
+      return `<div class="ava ava-fallback">${ch}</div>`;
+    }
+
+    function displayStatus(u){
+      if (!u) return 'Не в сети';
+      if (u.b) return 'Заблокирован';
+      if (u.ty && u.on) return 'Печатает...';
+      if (u.on) return 'В сети';
+      return 'Не в сети';
+    }
+
+    function currentSnapshot(){
+      return state.dbType === 'firebase' ? state.lastSnapshot : localGetSnapshot();
+    }
+
+    function updateFooter(){
+      const footer = $('footer');
+      footer.style.display = (state.room === 'global' || state.room === 'chat') ? 'flex' : 'none';
+    }
+
+    function updateChatBar(){
+      const bar = $('chatbar');
+      if(state.room !== 'chat' || !state.target){
+        bar.style.display = 'none';
+        bar.innerHTML = '';
+        return;
+      }
+      const u = currentSnapshot().users.find(x => x.n === state.target);
+      bar.style.display = 'flex';
+      bar.innerHTML = `${avatarHtml(state.target, u?.a)}
+        <div style="min-width:0">
+          <div style="font-weight:900; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(state.target)}</div>
+          <div style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(displayStatus(u))}</div>
+        </div>`;
     }
 
     function setRoom(r){
       if(state.room === 'chat' && r !== 'chat') sendTyping(false);
       state.room = r;
       if(r === 'priv'){
-        state.target = "";
+        state.target = '';
         $('p-warn').style.display = 'none';
       }
       $('t-g').className = 'pill ' + (r === 'global' ? 'active' : '');
@@ -864,34 +848,11 @@ html,body{
     }
     window.setR = setRoom;
 
-    function updateFooter(){
-      const footer = $('footer');
-      if(state.room === 'global' || state.room === 'chat') footer.style.display = 'flex';
-      else footer.style.display = 'none';
-    }
-
-    function updateChatBar(){
-      const bar = $('chatbar');
-      if(state.room !== 'chat' || !state.target){
-        bar.style.display = 'none';
-        bar.innerHTML = '';
-        return;
-      }
-      const u = state.lastSnapshot.users.find(x => x.n === state.target);
-      const st = displayStatus(u);
-      bar.style.display = 'flex';
-      bar.innerHTML = `${avatarHtml(state.target, u?.a)}
-        <div style="min-width:0">
-          <div style="font-weight:900; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(state.target)}</div>
-          <div style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(st)}</div>
-        </div>`;
-    }
-
     function renderPrivateList(){
-      const users = state.lastSnapshot.users.filter(u => u.n !== state.meName);
+      const users = currentSnapshot().users.filter(u => u.n !== state.meName);
       const html = users.map(u => {
         const lastRead = state.lastRead[u.n] || 0;
-        const hasNew = state.lastSnapshot.msgs.some(m => m.t === state.meName && m.f === u.n && (m.ts || 0) > lastRead);
+        const hasNew = currentSnapshot().msgs.some(m => m.t === state.meName && m.f === u.n && (m.ts || 0) > lastRead);
         return `<div class="msg-row" style="cursor:pointer; align-items:center;" onclick="openP('${jsEsc(u.n)}')">
           ${avatarHtml(u.n, u.a)}
           <div class="bubble" style="width:100%; max-width:none;">
@@ -901,17 +862,13 @@ html,body{
           ${hasNew ? '<span class="badge" style="position:static; margin-left:-4px;">1</span>' : ''}
         </div>`;
       }).join('');
-
       $('flow').innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:24px;">Пользователей пока нет</div>';
     }
 
     function msgHtml(m){
-      let content = '';
-      if (isImageData(m.m)) content = `<img src="${m.m}" alt="">`;
-      else content = esc(m.m);
-
       const isMe = m.f === state.meName;
       const sideAva = avatarHtml(m.f, m.fa || '');
+      const content = isImageData(m.m) ? `<img src="${m.m}" alt="">` : esc(m.m);
       const clickAct = isMe ? `onclick="showCtx('${m.id}', ${JSON.stringify(m.m)})"` : '';
       const time = m.ts ? new Date(m.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
       return `<div class="msg-row ${isMe ? 'me' : ''}">
@@ -925,14 +882,13 @@ html,body{
     }
 
     function renderMessages(){
-      const msgs = state.lastSnapshot.msgs;
+      const snap = currentSnapshot();
       let html = '';
-
       if(state.room === 'global'){
-        html = msgs.filter(m => !m.t).map(msgHtml).join('');
+        html = snap.msgs.filter(m => !m.t).map(msgHtml).join('');
       } else if(state.room === 'chat'){
         html = `<div onclick="setR('priv')" style="text-align:center; color:var(--acc); padding:6px 0 14px; cursor:pointer; font-weight:800;">← Назад к списку</div>` +
-          msgs.filter(m => (m.f === state.meName && m.t === state.target) || (m.f === state.target && m.t === state.meName)).map(msgHtml).join('');
+          snap.msgs.filter(m => (m.f === state.meName && m.t === state.target) || (m.f === state.target && m.t === state.meName)).map(msgHtml).join('');
       } else {
         renderPrivateList();
         return;
@@ -945,17 +901,13 @@ html,body{
     }
 
     function render(){
-      const me = state.lastSnapshot.users.find(u => u.n === state.meName);
+      const me = currentSnapshot().users.find(u => u.n === state.meName);
       if(me && me.b){
-        if(!state.banShown){
-          $('banOverlay').style.display = 'flex';
-          state.banShown = true;
-        }
+        if(!state.banShown){ $('banOverlay').style.display = 'flex'; state.banShown = true; }
         return;
-      } else {
-        $('banOverlay').style.display = 'none';
-        state.banShown = false;
       }
+      $('banOverlay').style.display = 'none';
+      state.banShown = false;
 
       if(state.room === 'priv') renderPrivateList();
       else renderMessages();
@@ -963,12 +915,8 @@ html,body{
     }
 
     function jsEsc(s){
-      return String(s)
-        .replace(/\/g,'\\')
-        .replace(/'/g,"\'")
-        .replace(/
-/g,' ')
-        .replace(/
+      return String(s).replace(/\/g,'\\').replace(/'/g,"\'").replace(/
+/g,' ').replace(/
 /g,' ');
     }
 
@@ -995,67 +943,53 @@ html,body{
       });
     }
 
-    function isFirebaseOnline(){
-      return state.dbType === 'firebase' && navigator.onLine && !!fbDb;
-    }
-
-    /***********************
-     *  FIREBASE
-     ***********************/
     function initFirebase(){
       try {
         fbApp = firebase.initializeApp(firebaseConfig);
         fbDb = firebase.database();
-        state.firebaseReady = true;
-        state.dbType = 'firebase';
+        firebaseOk = true;
       } catch (e) {
-        console.warn('Firebase init failed, switching to local mode:', e);
-        state.firebaseReady = false;
-        state.dbType = 'local';
+        console.warn('Firebase init failed:', e);
+        firebaseOk = false;
       }
+    }
+
+    function isFirebaseOnline(){
+      return firebaseOk && navigator.onLine;
     }
 
     async function fbAuthLogin(name, pass, avatar){
       const userRef = firebase.database().ref('users/' + name);
       const snap = await userRef.once('value');
       if(!snap.exists()){
-        await userRef.set({
-          n: name,
-          p: pass,
-          b: false,
-          a: avatar || '',
-          lastSeen: Date.now(),
-          typing: false,
-          reads: {}
-        });
+        await userRef.set({ n:name, p:pass, b:false, a:avatar || '', lastSeen: now(), typing:false, reads:{}, on:true });
         return 'REG';
       }
-
       const u = snap.val();
       if(u.b) return 'BAN';
       if((u.p || '') !== pass) return 'ERR';
-      const patch = { lastSeen: Date.now(), typing: false };
+      const patch = { lastSeen: now(), typing:false, on:true };
       if(avatar && avatar.length > 10) patch.a = avatar;
       await userRef.update(patch);
       return 'OK';
     }
 
-    async function fbStartPresence(){
+    function fbStartPresence(){
       const userRef = firebase.database().ref('users/' + state.meName);
       const connectedRef = firebase.database().ref('.info/connected');
       connectedRef.on('value', (snap) => {
         if(snap.val() === true){
-          userRef.onDisconnect().update({ on:false, typing:false, lastSeen: Date.now() });
-          userRef.update({ on:true, lastSeen: Date.now(), typing:false });
+          userRef.onDisconnect().update({ on:false, typing:false, lastSeen: now() });
+          userRef.update({ on:true, typing:false, lastSeen: now() });
         }
       });
     }
 
     function fbWatch(){
-      const usersRef = firebase.database().ref('users');
-      const msgsRef = firebase.database().ref('messages').orderByChild('ts').limitToLast(MAX_MESSAGES);
+      if(state.fbWatchersReady) return;
+      state.fbWatchersReady = true;
 
-      usersRef.on('value', (snap) => {
+      firebase.database().ref('users').on('value', (snap) => {
         const users = [];
         snap.forEach(child => users.push(child.val()));
         state.lastSnapshot.users = users;
@@ -1065,14 +999,14 @@ html,body{
         if(state.adminOpen) renderAdmin();
       });
 
-      msgsRef.on('value', (snap) => {
+      firebase.database().ref('messages').orderByChild('ts').limitToLast(MAX_MESSAGES).on('value', (snap) => {
         const msgs = [];
         snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
         msgs.sort((a,b) => (a.ts||0) - (b.ts||0));
         state.lastSnapshot.msgs = msgs;
 
         const hasNewPriv = msgs.some(m => m.t === state.meName && m.f !== state.target && !(state.lastRead[m.f] || 0));
-        if(hasNewPriv && state.room !== 'chat') $('p-warn').style.display = 'flex';
+        $('p-warn').style.display = (hasNewPriv && state.room !== 'chat') ? 'flex' : 'none';
 
         render();
         if(state.adminOpen) renderAdmin();
@@ -1080,34 +1014,19 @@ html,body{
     }
 
     async function fbSendText(text){
-      await firebase.database().ref('messages').push({
-        id: '',
-        f: state.meName,
-        t: state.room === 'chat' ? state.target : '',
-        m: text,
-        ts: Date.now()
-      });
+      await firebase.database().ref('messages').push({ f: state.meName, t: state.room === 'chat' ? state.target : '', m: text, ts: now() });
       pruneFirebaseMessages();
     }
 
     async function fbSendImage(dataUrl){
-      await firebase.database().ref('messages').push({
-        id: '',
-        f: state.meName,
-        t: state.room === 'chat' ? state.target : '',
-        m: dataUrl,
-        ts: Date.now()
-      });
+      await firebase.database().ref('messages').push({ f: state.meName, t: state.room === 'chat' ? state.target : '', m: dataUrl, ts: now() });
       pruneFirebaseMessages();
     }
 
     async function pruneFirebaseMessages(){
-      const ref = firebase.database().ref('messages').orderByChild('ts').limitToFirst(30);
-      const snap = await ref.once('value');
-      const countRef = firebase.database().ref('messages');
-      const allSnap = await countRef.orderByChild('ts').limitToLast(MAX_MESSAGES + 50).once('value');
+      const snap = await firebase.database().ref('messages').orderByChild('ts').limitToLast(MAX_MESSAGES + 50).once('value');
       const arr = [];
-      allSnap.forEach(child => arr.push({ key: child.key, ...child.val() }));
+      snap.forEach(child => arr.push({ key: child.key, ...child.val() }));
       arr.sort((a,b) => (a.ts||0) - (b.ts||0));
       while(arr.length > MAX_MESSAGES){
         const old = arr.shift();
@@ -1115,14 +1034,8 @@ html,body{
       }
     }
 
-    async function fbDeleteMessage(id){
-      await firebase.database().ref('messages/' + id).remove();
-    }
-
-    async function fbEditMessage(id, newText){
-      await firebase.database().ref('messages/' + id).update({ m: newText });
-    }
-
+    async function fbDeleteMessage(id){ await firebase.database().ref('messages/' + id).remove(); }
+    async function fbEditMessage(id, newText){ await firebase.database().ref('messages/' + id).update({ m: newText }); }
     async function fbToggleBan(username){
       const userRef = firebase.database().ref('users/' + username);
       const snap = await userRef.once('value');
@@ -1130,58 +1043,43 @@ html,body{
       const u = snap.val();
       await userRef.update({ b: !u.b });
     }
-
     async function fbClearChat(){
       const snap = await firebase.database().ref('messages').once('value');
       const removals = [];
       snap.forEach(child => removals.push(child.ref.remove()));
       await Promise.all(removals);
     }
-
     async function fbSetTyping(stateOn){
       if(!state.meName) return;
       if(state.room !== 'chat' && !stateOn) return;
-      await firebase.database().ref('users/' + state.meName).update({ typing: !!stateOn, lastSeen: Date.now() });
+      await firebase.database().ref('users/' + state.meName).update({ typing: !!stateOn, lastSeen: now() });
     }
 
-    /***********************
-     *  LOCAL MODE
-     ***********************/
     function localAuthLogin(name, pass, avatar){
       const db = localLoad();
       if(!db.users[name]){
-        db.users[name] = {
-          n: name,
-          p: pass,
-          b: false,
-          a: avatar || '',
-          lastSeen: Date.now(),
-          typing: false,
-          reads: {}
-        };
+        db.users[name] = { n:name, p:pass, b:false, a:avatar || '', lastSeen: now(), typing:false, reads:{}, on:true };
         localSave(db);
         return 'REG';
       }
       if(db.users[name].b) return 'BAN';
       if((db.users[name].p || '') !== pass) return 'ERR';
-      db.users[name].lastSeen = Date.now();
-      if(avatar && avatar.length > 10) db.users[name].a = avatar;
+      db.users[name].lastSeen = now();
       db.users[name].typing = false;
+      if(avatar && avatar.length > 10) db.users[name].a = avatar;
+      db.users[name].on = true;
       localSave(db);
       return 'OK';
     }
 
     function localStartPresence(){
-      localUpsertUser(state.meName, { on:true, lastSeen: Date.now(), typing:false });
-      window.addEventListener('beforeunload', () => {
-        localUpsertUser(state.meName, { on:false, typing:false, lastSeen: Date.now() });
-      });
+      localUpsertUser(state.meName, { on:true, typing:false, lastSeen: now() });
+      window.addEventListener('beforeunload', () => localUpsertUser(state.meName, { on:false, typing:false, lastSeen: now() }));
     }
 
     function localWatch(){
       state.lastSnapshot = localGetSnapshot();
-      const users = state.lastSnapshot.users;
-      const me = users.find(u => u.n === state.meName);
+      const me = state.lastSnapshot.users.find(u => u.n === state.meName);
       state.lastRead = (me && me.reads) ? me.reads : {};
       render();
       if(state.adminOpen) renderAdmin();
@@ -1194,108 +1092,80 @@ html,body{
     }
 
     function localSendText(text){
-      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: text, ts: Date.now() };
+      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: text, ts: now() };
       localAddMessage(msg);
-      pruneLocalMessages();
     }
 
     function localSendImage(dataUrl){
-      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: dataUrl, ts: Date.now() };
+      const msg = { id: 'm_' + now() + '_' + Math.random().toString(36).slice(2,8), f: state.meName, t: state.room === 'chat' ? state.target : '', m: dataUrl, ts: now() };
       localAddMessage(msg);
-      pruneLocalMessages();
     }
 
-    function pruneLocalMessages(){
+    async function localDeleteMessage(id){ localDeleteMessageById(id); }
+    function localDeleteMessageById(id){ localDeleteMessage(id); }
+
+    // fixed direct helpers to avoid name confusion
+    async function localDeleteCurrentMessage(id){
       const db = localLoad();
-      const msgs = Object.values(db.messages || {}).sort((a,b) => (a.ts||0) - (b.ts||0));
-      while(msgs.length > MAX_MESSAGES){
-        const old = msgs.shift();
-        delete db.messages[old.id];
-      }
+      delete db.messages[id];
       localSave(db);
     }
 
-    async function localDeleteMessage(id){
-      localDeleteMsg(id);
+    async function localEditCurrentMessage(id, newText){
+      const db = localLoad();
+      if(db.messages[id]) db.messages[id].m = newText;
+      localSave(db);
     }
 
-    async function localEditMessage(id, newText){
-      localEditMsg(id, newText);
-    }
-
-    async function localToggleBanUser(username){
-      localToggleBan(username);
-    }
-
-    async function localClearChat(){
-      localClearAll();
-    }
-
+    async function localToggleBanUser(username){ localToggleBan(username); }
+    async function localClearAllChat(){ localClearChat(); }
     async function localSetTyping(stateOn){
       if(!state.meName) return;
       if(state.room !== 'chat' && !stateOn) return;
-      localUpsertUser(state.meName, { typing: !!stateOn, lastSeen: Date.now(), on:true });
+      localUpsertUser(state.meName, { typing: !!stateOn, lastSeen: now(), on:true });
     }
 
-    /***********************
-     *  AUTH / MAIN
-     ***********************/
-    async function doLogin(){
-      const name = $('un').value.trim();
-      const pass = $('up').value;
-      const avatar = state.myAvaBase64 || '';
-      if(!name || !pass) return;
+    async function doL(){
+      try {
+        const name = $('un').value.trim();
+        const pass = $('up').value;
+        const avatar = state.myAvaBase64 || '';
+        if(!name || !pass){ alert('Введи логин и пароль'); return; }
 
-      let result = 'ERR';
-      if(isFirebaseOnline()) result = await fbAuthLogin(name, pass, avatar);
-      else result = localAuthLogin(name, pass, avatar);
+        let result = 'ERR';
+        if(isFirebaseOnline()) result = await fbAuthLogin(name, pass, avatar);
+        else result = localAuthLogin(name, pass, avatar);
 
-      if(result === 'BAN') return alert('Вы заблокированы');
-      if(result === 'ERR') return alert('Неверный пароль');
-      if(result === 'REG') alert('Аккаунт создан');
+        if(result === 'BAN'){ alert('Вы заблокированы'); return; }
+        if(result === 'ERR'){ alert('Неверный пароль'); return; }
+        if(result === 'REG'){ alert('Аккаунт создан'); }
 
-      state.meName = name;
-      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ name, ts: Date.now() }));
-      $('auth').classList.add('hidden');
-      $('auth').style.pointerEvents = 'none';
-      $('auth').style.opacity = '0';
+        state.meName = name;
+        localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ name, ts: now() }));
+        $('auth').classList.add('hidden');
+        $('auth').style.pointerEvents = 'none';
+        $('auth').style.opacity = '0';
 
-      if(isFirebaseOnline()){
-        await fbStartPresence();
-        fbWatch();
-        syncHeartbeatFirebase();
-      } else {
-        localStartPresence();
-        localWatch();
-        syncHeartbeatLocal();
-        showNotice('Офлайн режим: сообщения и аккаунты сохраняются только на этом устройстве.');
+        if(isFirebaseOnline()){
+          fbStartPresence();
+          fbWatch();
+          setInterval(() => { if(state.meName) firebase.database().ref('users/' + state.meName).update({ lastSeen: now() }).catch(()=>{}); }, 2500);
+          showNotice('Online mode активен: данные сохраняются в Firebase.');
+        } else {
+          localStartPresence();
+          localWatch();
+          setInterval(() => { if(state.meName) localUpsertUser(state.meName, { lastSeen: now(), on:true }); }, 2500);
+          showNotice('Offline mode: данные сохраняются только на этом устройстве.');
+        }
+
+        updateFooter();
+        render();
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка входа. Открой консоль и проверь код выше.');
       }
-
-      updateFooter();
-      render();
     }
-    window.doL = doLogin;
-
-    function syncHeartbeatFirebase(){
-      setInterval(() => {
-        if(!state.meName) return;
-        firebase.database().ref('users/' + state.meName).update({ lastSeen: Date.now() }).catch(()=>{});
-      }, 2500);
-    }
-
-    function syncHeartbeatLocal(){
-      setInterval(() => {
-        if(!state.meName) return;
-        localUpsertUser(state.meName, { lastSeen: Date.now(), on:true });
-      }, 2500);
-    }
-
-    async function sendTyping(stateOn){
-      if(!state.meName) return;
-      if(isFirebaseOnline()) await fbSetTyping(stateOn);
-      else await localSetTyping(stateOn);
-    }
-    window.sendTyping = sendTyping;
+    window.doL = doL;
 
     function openP(u){
       state.target = u;
@@ -1310,7 +1180,7 @@ html,body{
 
     function markRead(peer){
       if(!state.meName || !peer) return;
-      state.lastRead[peer] = Date.now();
+      state.lastRead[peer] = now();
       if(isFirebaseOnline()){
         firebase.database().ref('users/' + state.meName + '/reads/' + peer).set(state.lastRead[peer]).catch(()=>{});
       } else {
@@ -1318,9 +1188,12 @@ html,body{
       }
     }
 
-    function currentSnapshot(){
-      return isFirebaseOnline() ? state.lastSnapshot : localGetSnapshot();
+    async function sendTyping(stateOn){
+      if(!state.meName) return;
+      if(isFirebaseOnline()) await fbSetTyping(stateOn);
+      else await localSetTyping(stateOn);
     }
+    window.sendTyping = sendTyping;
 
     async function sT(){
       const input = $('mi');
@@ -1356,11 +1229,10 @@ html,body{
     function showCtx(id, txt){
       state.activeMsgId = id;
       state.activeMsgText = txt;
-      $('ctx-t').innerText = (String(txt).startsWith('data:image/')) ? '[Вложение]' : String(txt).slice(0, 24) + (String(txt).length > 24 ? '...' : '');
+      $('ctx-t').innerText = String(txt).startsWith('data:image/') ? '[Вложение]' : String(txt).slice(0, 24) + (String(txt).length > 24 ? '...' : '');
       $('ctx').style.display = 'flex';
     }
     window.showCtx = showCtx;
-
     function closeCtx(){ $('ctx').style.display = 'none'; }
     window.closeCtx = closeCtx;
     window.hideCtx = (e) => { if(e.target.id === 'ctx') closeCtx(); };
@@ -1373,7 +1245,7 @@ html,body{
       if(!msg) return;
       if(msg.f !== state.meName) return alert('Можно удалять только свои сообщения');
       if(isFirebaseOnline()) await fbDeleteMessage(state.activeMsgId);
-      else await localDeleteMessage(state.activeMsgId);
+      else await localDeleteCurrentMessage(state.activeMsgId);
       render();
     }
     window.actDel = actDel;
@@ -1389,7 +1261,7 @@ html,body{
       const newVal = prompt('Новый текст сообщения:', msg.m || '');
       if(newVal && newVal.trim() !== ''){
         if(isFirebaseOnline()) await fbEditMessage(state.activeMsgId, newVal.trim());
-        else await localEditMessage(state.activeMsgId, newVal.trim());
+        else await localEditCurrentMessage(state.activeMsgId, newVal.trim());
         render();
       }
     }
@@ -1448,14 +1320,8 @@ html,body{
       const [cmd, queryStr] = c.split('&');
       if(cmd === 'clear'){
         if(!confirm('Очистить все сообщения?')) return;
-        if(isFirebaseOnline()){
-          const snap = await firebase.database().ref('messages').once('value');
-          const removals = [];
-          snap.forEach(child => removals.push(child.ref.remove()));
-          await Promise.all(removals);
-        } else {
-          localClearChat();
-        }
+        if(isFirebaseOnline()) await fbClearChat();
+        else await localClearAllChat();
       }
       if(cmd === 'ban'){
         const params = new URLSearchParams(queryStr);
@@ -1464,20 +1330,13 @@ html,body{
         if(isFirebaseOnline()) await fbToggleBan(u);
         else await localToggleBanUser(u);
       }
-      if(isFirebaseOnline()){
-        // wait a tick for onValue update
-        setTimeout(renderAdmin, 200);
-      } else {
-        renderAdmin();
-      }
       await refreshSnapshot();
     }
     window.aCmd = aCmd;
 
     function setAvatarPreview(base64){
       state.myAvaBase64 = base64;
-      const box = $('ava-prv');
-      box.innerHTML = base64 ? `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">` : '📷';
+      $('ava-prv').innerHTML = base64 ? `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">` : '📷';
     }
     window.readAva = async function(el){
       const file = el.files && el.files[0];
@@ -1485,17 +1344,6 @@ html,body{
       const dataUrl = await fileToDataURL(file, 96, 0.22);
       setAvatarPreview(dataUrl);
     };
-
-    function updateWarnFromSnapshot(){
-      const snap = currentSnapshot();
-      const me = snap.users.find(u => u.n === state.meName);
-      if(me && me.b){
-        $('banOverlay').style.display = 'flex';
-        state.banShown = true;
-      }
-      const hasNewPriv = snap.msgs.some(m => m.t === state.meName && m.f !== state.target && !(state.lastRead[m.f] || 0));
-      $('p-warn').style.display = (hasNewPriv && state.room !== 'chat') ? 'flex' : 'none';
-    }
 
     async function refreshSnapshot(){
       if(isFirebaseOnline()){
@@ -1512,9 +1360,21 @@ html,body{
       } else {
         state.lastSnapshot = localGetSnapshot();
       }
-      updateWarnFromSnapshot();
+      const me = state.lastSnapshot.users.find(u => u.n === state.meName);
+      state.lastRead = (me && me.reads) ? me.reads : {};
+      const hasNewPriv = state.lastSnapshot.msgs.some(m => m.t === state.meName && m.f === state.target && (m.ts || 0) > (state.lastRead[m.f] || 0));
+      $('p-warn').style.display = (hasNewPriv && state.room !== 'chat') ? 'flex' : 'none';
       render();
       if(state.adminOpen) renderAdmin();
+    }
+
+    function attachFirebaseWatchers(){
+      if(state.fbWatchersReady) return;
+      state.fbWatchersReady = true;
+      fbWatch();
+      setInterval(() => {
+        if(state.meName) firebase.database().ref('users/' + state.meName).update({ lastSeen: now() }).catch(()=>{});
+      }, 2500);
     }
 
     function attachLocalPolling(){
@@ -1522,90 +1382,77 @@ html,body{
       state.localTimer = setInterval(() => {
         if(!state.meName) return;
         state.lastSnapshot = localGetSnapshot();
-        updateWarnFromSnapshot();
+        const me = state.lastSnapshot.users.find(u => u.n === state.meName);
+        state.lastRead = (me && me.reads) ? me.reads : {};
+        const hasNewPriv = state.lastSnapshot.msgs.some(m => m.t === state.meName && m.f === state.target && (m.ts || 0) > (state.lastRead[m.f] || 0));
+        $('p-warn').style.display = (hasNewPriv && state.room !== 'chat') ? 'flex' : 'none';
         render();
         if(state.adminOpen) renderAdmin();
       }, 1000);
     }
 
-    function attachOnlineChangeHandlers(){
+    async function boot(){
+      setNetUI(navigator.onLine);
+      initFirebase();
+      state.dbType = (navigator.onLine && firebaseOk) ? 'firebase' : 'local';
+
+      const savedSession = (() => {
+        try { return JSON.parse(localStorage.getItem(LOCAL_SESSION_KEY) || 'null'); } catch { return null; }
+      })();
+      if(savedSession && savedSession.name) $('un').value = savedSession.name;
+
+      if(state.dbType === 'firebase') showNotice('Online mode активен: данные сохраняются в Firebase.');
+      else showNotice('Offline mode: данные сохраняются только на этом устройстве.');
+
       window.addEventListener('online', async () => {
         setNetUI(true);
-        state.dbType = 'firebase';
-        showNotice('Перешли в online mode: Firebase включён.');
-        if(state.meName && state.firebaseReady){
-          await refreshSnapshot();
+        if(firebaseOk){
+          state.dbType = 'firebase';
+          showNotice('Перешли в online mode: Firebase включён.');
+          if(state.meName){
+            attachFirebaseWatchers();
+            await refreshSnapshot();
+          }
         }
       });
-      window.addEventListener('offline', async () => {
+
+      window.addEventListener('offline', () => {
         setNetUI(false);
         state.dbType = 'local';
         showNotice('Нет сети: включён offline mode на этом устройстве.');
         if(state.meName) attachLocalPolling();
       });
-    }
 
-    function tryResumeSession(){
-      try {
-        const s = JSON.parse(localStorage.getItem(LOCAL_SESSION_KEY) || 'null');
-        if(s && s.name) return s.name;
-      } catch {}
-      return '';
-    }
+      $('mi').addEventListener('input', () => {
+        if(state.room !== 'chat'){
+          sendTyping(false);
+          return;
+        }
+        clearTimeout(state.typingTimer);
+        const hasText = $('mi').value.trim().length > 0;
+        if(hasText){
+          sendTyping(true);
+          state.typingTimer = setTimeout(() => sendTyping(false), 1100);
+        } else {
+          sendTyping(false);
+        }
+      });
 
-    async function boot(){
-      attachOnlineChangeHandlers();
-      setNetUI(navigator.onLine);
-      initFirebase();
+      $('mi').addEventListener('keydown', (e) => { if(e.key === 'Enter') sT(); });
 
-      const savedName = tryResumeSession();
-      if(savedName) {
-        $('un').value = savedName;
-      }
-
-      // Try to preload snapshot to make admin and lists available after login.
-      if(navigator.onLine && state.firebaseReady){
-        state.dbType = 'firebase';
-        showNotice('Online mode активен: данные сохраняются в Firebase и доступны на других устройствах.');
-      } else {
-        state.dbType = 'local';
-        showNotice('Offline mode: данные сохраняются только в этом браузере.');
-      }
-
-      // Keep UI alive even before login.
       render();
       updateFooter();
     }
 
-    // Expose login before boot binding
-    window.doL = doLogin;
-
-    $('mi').addEventListener('input', () => {
-      if(state.room !== 'chat'){
-        sendTyping(false);
-        return;
-      }
-      clearTimeout(state.typingTimer);
-      const hasText = $('mi').value.trim().length > 0;
-      if(hasText){
-        sendTyping(true);
-        state.typingTimer = setTimeout(() => sendTyping(false), 1100);
-      } else {
-        sendTyping(false);
-      }
-    });
-
-    $('mi').addEventListener('keydown', (e) => {
-      if(e.key === 'Enter') sT();
-    });
-
     window.addEventListener('beforeunload', () => {
       try {
-        if(state.meName){
-          if(isFirebaseOnline()) firebase.database().ref('users/' + state.meName).update({ on:false, typing:false, lastSeen: Date.now() });
-          else localUpsertUser(state.meName, { on:false, typing:false, lastSeen: Date.now() });
+        if(!state.meName) return;
+        if(state.dbType === 'firebase' && firebaseOk){
+          firebase.database().ref('users/' + state.meName).update({ on:false, typing:false, lastSeen: now() });
+        } else {
+          localUpsertUser(state.meName, { on:false, typing:false, lastSeen: now() });
         }
-      } catch(e) {}
+      } catch(e){}
     });
 
     boot();
